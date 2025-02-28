@@ -22,5 +22,25 @@ class Producto {
         $resultado = $this->conn->query($sql);
         return $resultado;
     }
+    public function crearProducto($nombre, $precio, $stock) {
+        $sql = "INSERT INTO productos (nombre, precio, stock) VALUES (?, ?, ?)";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("sdd", $nombre, $precio, $stock);
+        return $stmt->execute();
+    }
+
+    public function actualizarProducto($id, $nombre, $precio, $stock) {
+        $sql = "UPDATE productos SET nombre = ?, precio = ?, stock = ? WHERE id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("sddi", $nombre, $precio, $stock, $id);
+        return $stmt->execute();
+    }
+
+    public function eliminarProducto($id) {
+        $sql = "DELETE FROM productos WHERE id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $id);
+        return $stmt->execute();
+    }
 }
 ?>

@@ -24,12 +24,62 @@ class ProductoService {
         $this->generarXML($resultado);
     }
 
+    public function crearProducto() {
+        $nombre = $_POST['nombre'];
+        $precio = $_POST['precio'];
+        $stock = $_POST['stock'];
+
+        if ($this->producto->crearProducto($nombre, $precio, $stock)) {
+            $this->enviarRespuesta("Producto creado con éxito");
+        } else {
+            $this->enviarError("Error al crear el producto");
+        }
+    }
+
+    public function actualizarProducto() {
+        $id = $_POST['id'];
+        $nombre = $_POST['nombre'];
+        $precio = $_POST['precio'];
+        $stock = $_POST['stock'];
+
+        if ($this->producto->actualizarProducto($id, $nombre, $precio, $stock)) {
+            $this->enviarRespuesta("Producto actualizado con éxito");
+        } else {
+            $this->enviarError("Error al actualizar el producto");
+        }
+    }
+
+    public function eliminarProducto() {
+        $id = $_POST['id'];
+
+        if ($this->producto->eliminarProducto($id)) {
+            $this->enviarRespuesta("Producto eliminado con éxito");
+        } else {
+            $this->enviarError("Error al eliminar el producto");
+        }
+    }
+
     private function enviarError($mensaje, $dom = null, $root = null) {
         if (!$dom) {
             header("Content-Type: application/xml; charset=UTF-8");
             $dom = new DOMDocument("1.0", "UTF-8");
             $dom->formatOutput = true;
             $root = $dom->createElement("error");
+            $dom->appendChild($root);
+        }
+
+        $mensajeNode = $dom->createElement("mensaje", $mensaje);
+        $root->appendChild($mensajeNode);
+
+        echo $dom->saveXML();
+        exit;
+    }
+    private function enviarRespuesta($mensaje, $dom = null, $root = null) {
+        if (!$dom) {
+            header("Content-Type: application/xml; charset=UTF-8");
+            $dom = new DOMDocument("1.0", "UTF-8");
+            $dom->formatOutput = true;
+            $root = $dom->createElement("respuesta");
             $dom->appendChild($root);
         }
 
@@ -67,6 +117,26 @@ class ProductoService {
 
 $service = new ProductoService();
 $service->validarAcceso();
-$service->obtenerProductos();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_POST['accion'])) {
+        switch ($_POST['accion']) {
+            case 'crear':
+                $service->crearProducto();
+                break;
+            case 'actualizar':
+                $service->actualizarProducto();
+                break;
+            case 'eliminar':
+                $service->eliminarProducto();
+                break;
+            default:
+                $service->enviarError("Acción no válida");
+        }
+    } else {
+        $service->enviarError("Acción no especificada");
+    }
+} else {
+    $service->obtenerProductos();
+}
 
 ?>
